@@ -1,91 +1,80 @@
 /* Your Code Here */
-function createEmployeeRecord(ary){
-    let record
-    return record = { 
-        firstName: ary[0],
-        familyName: ary[1],
-        title: ary[2],
-        payPerHour: ary[3],
-        timeInEvents: [], 
+let createEmployeeRecord = function(empInfo) {
+    const [firstName, familyName, title, payPerHour] = empInfo;
+    return {
+        firstName: firstName,
+        familyName: familyName,
+        title: title,
+        payPerHour: payPerHour,
+        timeInEvents: [],
         timeOutEvents: []
-    }
+    };
+};
+
+let createEmployeeRecords = function(empRecords) {
+    return empRecords.map(emp => createEmployeeRecord(emp));
+};
+
+let createTimeInEvent = function(dateStamp) {
+    const [date, hour] = dateStamp.split(" ");
+
+    this.timeInEvents.push({
+        type: "TimeIn",
+        hour: parseInt(hour,10),
+        date: date
+    });
+
+    return this;
+};
+
+let createTimeOutEvent = function(dateStamp) {
+    const [date, hour] = dateStamp.split(" ");
+
+    this.timeOutEvents.push({
+        type: "TimeOut",
+        hour: parseInt(hour,10),
+        date: date
+    });
+
+    return this;
+};
+
+let hoursWorkedOnDate = function(dateStamp) {
+
+    let timeIn = this.timeInEvents.filter(timeIn => timeIn.date === dateStamp)[0].hour;
+    let timeOut = this.timeOutEvents.filter(timeOut => timeOut.date === dateStamp)[0].hour;
+
+    return ((timeOut - timeIn) * .01);
+};
+
+let wagesEarnedOnDate = function(dateStamp) {
+    return this.payPerHour * hoursWorkedOnDate.call(this, dateStamp);
+};
+
+// provided by the lab
+let allWagesFor = function () {
+    let eligibleDates = this.timeInEvents.map(function (e) {
+        return e.date
+    })
+
+    let payable = eligibleDates.reduce(function (memo, d) {
+        return memo + wagesEarnedOnDate.call(this, d)
+    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
+
+    return payable
 }
 
-function createEmployeeRecords(arys){
-    return arys.map(createEmployeeRecord)
-}
+let findEmployeeByFirstName = function(sourceArray, firstName) {
+    let empRecord = sourceArray.filter(emp => emp.firstName === firstName);
 
-function createDSObj(getType, dateStamp) {
-    return {type: getType, date: dateStamp.slice(0,10), hour: parseInt(dateStamp.slice(-4))}
-}
+    return !!empRecord[0] ? empRecord[0] : undefined;
+};
 
-function createTimeInEvent(obj, dateStamp){
-    obj.timeInEvents.push(createDSObj("TimeIn", dateStamp))
-    return obj
-}
-
-
-function createTimeOutEvent(obj, dateStamp){
-    obj.timeOutEvents.push(createDSObj("TimeOut", dateStamp))
-    return obj
-}
-
-function hoursWorkedOnDate(obj, dateYMD){
-    const timeIn = obj.timeInEvents.find((e) => e.date === dateYMD).hour
-    const timeOut = obj.timeOutEvents.find((e) => e.date === dateYMD).hour
-    return (timeOut - timeIn)/100
-}
-
-function wagesEarnedOnDate(obj, dateYMD){
-
-    const wage = obj.payPerHour
-    const hoursWorked = hoursWorkedOnDate(obj, dateYMD)
-    return wage * hoursWorked
-}
-
-function allWagesFor(obj){
-    const allWages = obj.timeInEvents.map((day) => {return wagesEarnedOnDate(obj, day.date)})
-    return allWages.reduce((acc, cv) => acc + cv)
-}
-
-function calculatePayroll(records){
-    const allPay = (records.map((empl) => {return allWagesFor(empl)}))
-    return allPay.reduce((acc, cv) => acc + cv)
-}
-
-function findEmployeeByFirstName(srcArray, first_Name){
-    return srcArray.find((record) => record.firstName === first_Name)
-}
-
-
-
-// ////////////////
-
-        let rRecord = createEmployeeRecord(["Rafiki", "", "Aide", 10])
-        let sRecord = createEmployeeRecord(["Simba", "", "King", 100])
-
-        let sTimeData = [
-          ["2019-01-01 0900", "2019-01-01 1300"], // 4 * 100 = 400
-          ["2019-01-02 1000", "2019-01-02 1300"]  // 3 * 100 = 300 ===> 700 total
-        ]
-
-        let rTimeData = [
-          ["2019-01-11 0900", "2019-01-11 1300"], // 4 * 10 = 40
-          ["2019-01-12 1000", "2019-01-12 1300"]  // 3 * 10 = 40 ===> 70 total ||=> 770
-        ]
-
-        sTimeData.forEach(function (d) {
-          let [dIn, dOut] = d
-          sRecord = createTimeInEvent(sRecord, dIn)
-          sRecord = createTimeOutEvent(sRecord, dOut)
-        })
-
-        rTimeData.forEach(function (d, i) {
-          let [dIn, dOut] = d
-          rRecord = createTimeInEvent(rRecord, dIn)
-          rRecord = createTimeOutEvent(rRecord, dOut)
-        })
-
-        let employees = [sRecord, rRecord]
-
-        calculatePayroll(employees)
+let calculatePayroll = function(empArray) {
+    // I couldn't make this pass adjusting my code from the first lesson
+    // the solution uses allWagesFor, which I had wanted to use in the first lesson
+    // but it called out wagesEarnedOnDate
+    // following the solution and using my allWagesFor made the function much nicer
+    // and work properly - yay!
+    return empArray.reduce((total, wages) => total += allWagesFor.call(wages),0);
+};
